@@ -77,3 +77,18 @@ def get_lecture_summary(lecture: int) -> str:
         available = sorted(p.stem for p in (DATA_DIR / "lectures").glob("*.md"))
         return f"第{lecture}回の要点はまだありません。用意されている回: {', '.join(available)}"
     return path.read_text(encoding="utf-8")
+def make_quiz(lecture: int) -> str:
+    """指定した回の用語から、確認問題を1問作る。
+
+    「第N回の問題を出して」のように言われたときに使う。
+    戻り値は {"question": ..., "answer": ...} の JSON 文字列。
+    """
+    terms = [e for e in load_glossary() if e["lecture"] == lecture]
+    if not terms:
+        return f"第{lecture}回の用語は用語集にありません。"
+    entry = terms[0]
+    quiz = {
+        "question": f"第{lecture}回の用語です。次の説明に当てはまる用語は何ですか？\n{entry['definition']}",
+        "answer": entry["term"],
+    }
+    return json.dumps(quiz, ensure_ascii=False)
